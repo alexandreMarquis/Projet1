@@ -3,7 +3,9 @@ import requests
 import json
 import datetime
 
+
 def conversionLigneCommande():
+
     parser = argparse.ArgumentParser(description="Extraction de valeurs historiques pour un symbole boursier")
 
     parser.add_argument(
@@ -19,7 +21,7 @@ def conversionLigneCommande():
 
     parser.add_argument(
         '-v', '--valeur',
-        dest='valeur', nargs='+', default='fermeture',
+        dest='valeur', nargs='+', default=['fermeture'],
         choices=['fermeture', 'ouverture', 'min', 'max', 'volume'],
         help="La valeur desiree (par defaut: fermeture)"
     )
@@ -28,32 +30,11 @@ def conversionLigneCommande():
         'symbole', metavar='symbole', help='Nom du symbole boursier desire'
     )
 
-    arg = parser.parse_args()
+    return parser.parse_args()
 
-    # conversion de l'argument 'valeur' pour matcher les cles du dictionnaire de l'api AlphaVantage
-    for i, val in enumerate(arg.valeur):
-        if val == 'ouverture':
-            arg.valeur[i] = '1. open'
-        elif val == 'max':
-            arg.valeur[i] = '2. high'
-        elif val == 'min':
-            arg.valeur[i] = '3. low'
-        elif val == 'fermeture':
-            arg.valeur[i] = '4. close'
-        elif val == 'volume':
-            arg.valeur[i] = '5. volume'
-
-    #conversion des string date en objet date
-    arg.dateDebut = datetime.datetime.strptime(arg.dateDebut, '%Y-%m-%d')
-    arg.dateFin = datetime.datetime.strptime(arg.dateFin, '%Y-%m-%d')
-
-    #ajustement des valeurs de date pour requete
-    if arg.dateDebut > arg.dateFin:
-        arg.dateDebut = arg.dateFin
-
-    return arg
 
 def requeteApi(arg):
+
     url = 'https://www.alphavantage.co/query'
     function = 'TIME_SERIES_DAILY'
     apikey = '3PQRLNKE9VP5JH12'
@@ -71,6 +52,29 @@ def requeteApi(arg):
 
 
 def traitmentDonnee(reponseApi, arg):
+
+    # conversion de l'argument 'valeur' pour matcher les cles du dictionnaire de l'api AlphaVantage
+    for i in range(len(arg.valeur)):
+        if arg.valeur[i] == 'ouverture':
+            arg.valeur[i] = '1. open'
+        elif arg.valeur[i] == 'max':
+            arg.valeur[i] = '2. high'
+        elif arg.valeur[i] == 'min':
+            arg.valeur[i] = '3. low'
+        elif arg.valeur[i] == 'fermeture':
+            arg.valeur[i] = '4. close'
+        elif arg.valeur[i] == 'volume':
+            arg.valeur[i] = '5. volume'
+
+    # conversion des string date en objet date
+    arg.dateDebut = datetime.datetime.strptime(arg.dateDebut, '%Y-%m-%d')
+    arg.dateFin = datetime.datetime.strptime(arg.dateFin, '%Y-%m-%d')
+
+    # ajustement des valeurs de date pour requete
+    if arg.dateDebut > arg.dateFin:
+        arg.dateDebut = arg.dateFin
+
+
     resultat = []
 
     #On parcourt la reponse de l'Api ligne par ligne
@@ -84,7 +88,7 @@ def traitmentDonnee(reponseApi, arg):
 
             requeteFiltree = reponseApi['Time Series (Daily)'][cleDateRequete]
 
-            selectionDonnees = []
+            selectionDonnees = [str(cleDateRequete)]
 
             for cleValeur in requeteFiltree:
                 #selon ce que l'utilisateur veut voir comme valeur
@@ -92,14 +96,20 @@ def traitmentDonnee(reponseApi, arg):
                     selectionDonnees.append(str(requeteFiltree[cleValeur]))
 
             resultat.append(tuple(selectionDonnees))
+            resultat.reverse()
 
-    print(resultat)
+    return resultat
 
 
 def main():
+
     arg = conversionLigneCommande()
+    print('{}({}, {}, {})'.format(arg.symbole, ','.join(arg.valeur), arg.dateDebut, arg.dateFin))
+
     req = requeteApi(arg)
-    traitmentDonnee(req, arg)
+
+    res = traitmentDonnee(req, arg)
+    print(res)
 
 
 if __name__ == '__main__':
