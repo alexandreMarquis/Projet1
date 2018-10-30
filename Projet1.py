@@ -74,7 +74,6 @@ def traitmentDonnee(reponseApi, arg):
     if arg.dateDebut > arg.dateFin:
         arg.dateDebut = arg.dateFin
 
-
     resultat = []
 
     #On parcourt la reponse de l'Api ligne par ligne
@@ -88,14 +87,14 @@ def traitmentDonnee(reponseApi, arg):
 
             requeteFiltree = reponseApi['Time Series (Daily)'][cleDateRequete]
 
-            selectionDonnees = [str(cleDateRequete)]
+            donneeARetourner = [str(cleDateRequete)]
 
             for cleValeur in requeteFiltree:
                 #selon ce que l'utilisateur veut voir comme valeur
                 if cleValeur in arg.valeur:
-                    selectionDonnees.append(str(requeteFiltree[cleValeur]))
+                    donneeARetourner.append(str(requeteFiltree[cleValeur]))
 
-            resultat.append(tuple(selectionDonnees))
+            resultat.append(tuple(donneeARetourner))
             resultat.reverse()
 
     return resultat
