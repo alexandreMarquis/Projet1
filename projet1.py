@@ -1,12 +1,14 @@
+"""
+Retourne la Valeur boursiere d'une action
+"""
 import argparse
 import json
 import datetime
 import requests
 
 
-
 def conversion_ligne_commande():
-
+    """Configure le parser et recupere les arguments"""
     parser = argparse.ArgumentParser(description="Extraction de valeurs "
                                                  "historiques pour un symbole"
                                                  "boursier")
@@ -37,7 +39,7 @@ def conversion_ligne_commande():
 
 
 def requete_api(arg):
-
+    """Execute une requete d'une valeur boursiere"""
     url = 'https://www.alphavantage.co/query'
     function = 'TIME_SERIES_DAILY'
     apikey = '3PQRLNKE9VP5JH12'
@@ -55,7 +57,7 @@ def requete_api(arg):
 
 
 def traitment_donnee(reponse_api, arg):
-
+    """Traite les donnees recu pour matcher les demandes de l'utilisateur"""
     # conversion de l'argument 'valeur' pour matcher les
     # cles du dictionnaire de l'api AlphaVantage
     for i in range(len(arg.valeur)):
@@ -105,7 +107,7 @@ def traitment_donnee(reponse_api, arg):
 
 
 def main():
-
+    """Execution du programme"""
     arg = conversion_ligne_commande()
     print('{}({}, {}, {})'.format(arg.symbole, ','.join(arg.valeur),
                                   arg.dateDebut, arg.dateFin))
