@@ -1,12 +1,15 @@
 import argparse
-import requests
 import json
 import datetime
+import requests
 
 
-def conversionLigneCommande():
 
-    parser = argparse.ArgumentParser(description="Extraction de valeurs historiques pour un symbole boursier")
+def conversion_ligne_commande():
+
+    parser = argparse.ArgumentParser(description="Extraction de valeurs "
+                                                 "historiques pour un symbole"
+                                                 "boursier")
 
     parser.add_argument(
         '-d', '--debut',
@@ -33,7 +36,7 @@ def conversionLigneCommande():
     return parser.parse_args()
 
 
-def requeteApi(arg):
+def requete_api(arg):
 
     url = 'https://www.alphavantage.co/query'
     function = 'TIME_SERIES_DAILY'
@@ -51,9 +54,10 @@ def requeteApi(arg):
     return json.loads(response.text)
 
 
-def traitmentDonnee(reponseApi, arg):
+def traitment_donnee(reponse_api, arg):
 
-    # conversion de l'argument 'valeur' pour matcher les cles du dictionnaire de l'api AlphaVantage
+    # conversion de l'argument 'valeur' pour matcher les
+    # cles du dictionnaire de l'api AlphaVantage
     for i in range(len(arg.valeur)):
         if arg.valeur[i] == 'ouverture':
             arg.valeur[i] = '1. open'
@@ -76,25 +80,25 @@ def traitmentDonnee(reponseApi, arg):
 
     resultat = []
 
-    #On parcourt la reponse de l'Api ligne par ligne
-    for cleDateRequete in reponseApi['Time Series (Daily)']:
+    # On parcourt la reponse de l'Api ligne par ligne
+    for cle_date_requete in reponse_api['Time Series (Daily)']:
 
-        #conversion de la string date de la requete en objet date
-        dateRequete = datetime.datetime.strptime(cleDateRequete, '%Y-%m-%d')
+        # conversion de la string date de la requete en objet date
+        date_requete = datetime.datetime.strptime(cle_date_requete, '%Y-%m-%d')
 
-        #si on est dans le range de date demande par l'utilisteur
-        if dateRequete >= arg.dateDebut and dateRequete <= arg.dateFin:
+        # si on est dans le range de date demande par l'utilisteur
+        if date_requete >= arg.dateDebut and date_requete <= arg.dateFin:
 
-            requeteFiltree = reponseApi['Time Series (Daily)'][cleDateRequete]
+            requete_filtree = reponse_api['Time Series (Daily)'][cle_date_requete]
 
-            donneeARetourner = [str(cleDateRequete)]
+            donnee_a_retourner = [str(cle_date_requete)]
 
-            for cleValeur in requeteFiltree:
-                #selon ce que l'utilisateur veut voir comme valeur
-                if cleValeur in arg.valeur:
-                    donneeARetourner.append(str(requeteFiltree[cleValeur]))
+            for cle_valeur in requete_filtree:
+                # selon ce que l'utilisateur veut voir comme valeur
+                if cle_valeur in arg.valeur:
+                    donnee_a_retourner.append(str(requete_filtree[cle_valeur]))
 
-            resultat.append(tuple(donneeARetourner))
+            resultat.append(tuple(donnee_a_retourner))
             resultat.reverse()
 
     return resultat
@@ -102,13 +106,14 @@ def traitmentDonnee(reponseApi, arg):
 
 def main():
 
-    arg = conversionLigneCommande()
-    print('{}({}, {}, {})'.format(arg.symbole, ','.join(arg.valeur), arg.dateDebut, arg.dateFin))
+    arg = conversion_ligne_commande()
+    print('{}({}, {}, {})'.format(arg.symbole, ','.join(arg.valeur),
+                                  arg.dateDebut, arg.dateFin))
 
-    req = requeteApi(arg)
+    req = requete_api(arg)
 
-    res = traitmentDonnee(req, arg)
-    print(res)
+    res = traitment_donnee(req, arg)
+    print res
 
 
 if __name__ == '__main__':
